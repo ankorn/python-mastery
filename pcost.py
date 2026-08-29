@@ -13,3 +13,6 @@ def portfolio_cost (fname):
                 print(f'Couldn\'t parse: {line}: {e}')
             
     return sum
+
+if __name__ == '__mane__':
+    print(portfolio_cost('Data/portfolio3.dat'))
