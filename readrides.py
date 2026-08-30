@@ -1,4 +1,30 @@
 import csv
+import tracemalloc
+import collections
+
+class RideData(collections.abc.Sequence):
+    def __init__(self):
+        # Each value is a list with all the values (a column)
+        self.routes = []
+        self.dates = []
+        self.daytypes = []
+        self.numrides = []
+        
+    def __len__(self):
+        # All lists assumed to have the same length
+        return len(self.routes)
+
+    def __getitem__(self, index):
+        return { 'route': self.routes[index],
+                 'date': self.dates[index],
+                 'daytype': self.daytypes[index],
+                 'rides': self.numrides[index] }
+
+    def append(self, d):
+        self.routes.append(d['route'])
+        self.dates.append(d['date'])
+        self.daytypes.append(d['daytype'])
+        self.numrides.append(d['rides'])
 
 # class Row:
 #     def __init__(self, route, date, daytype, rides):
@@ -47,7 +73,10 @@ def read_rides_as_tuples(filename):
     return records
 
 def read_rides_as_dicts(filename):
-    records = []
+    tracemalloc.start()
+    # records = []
+    records = RideData() # 300+ to 90 MB
+    
     with open(filename) as f:
         rows = csv.reader(f)
         headings = next(rows)     # Skip headers
@@ -64,7 +93,29 @@ def read_rides_as_dicts(filename):
             }
             records.append(record)
             
+    current, peak = tracemalloc.get_traced_memory()
+    print('current', current / (1024**2))
+    print('peak', peak / (1024**2))
+            
     return records
+
+def read_rides_as_columns(filename):
+    '''
+    Read the bus ride data into 4 lists, representing columns
+    '''
+    routes = []
+    dates = []
+    daytypes = []
+    numrides = []
+    with open(filename) as f:
+        rows = csv.reader(f)
+        headings = next(rows)     # Skip headers
+        for row in rows:
+            routes.append(row[0])
+            dates.append(row[1])
+            daytypes.append(row[2])
+            numrides.append(int(row[3]))
+    return dict(routes=routes, dates=dates, daytypes=daytypes, numrides=numrides)
 
 if __name__ == '__main__':
     import tracemalloc
