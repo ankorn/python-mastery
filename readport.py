@@ -1,4 +1,5 @@
 import csv
+from stock import Stock
 
 # A function that reads a file into a list of dicts
 def read_portfolio(filename):
