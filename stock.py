@@ -9,6 +9,13 @@ class Stock:
         self._shares = shares
         self._price = price
         
+    def __repr__(self):
+        return f'Stock(\'{self.name}\', {self.shares}, {self.price})'
+    
+    def __eq__(self, other):
+        return isinstance(other, Stock) and ((self.name, self.shares, self.price) == 
+                                             (other.name, other.shares, other.price))
+        
     @classmethod
     def from_row(cls, row: list[str]):
         values = [func(value) for value, func in zip(row, cls._types)]
