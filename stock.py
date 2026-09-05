@@ -1,5 +1,3 @@
-import csv
-
 class Stock:
     _types = (str, int, float)
     __slots__ = '_shares', '_price', 'name'
@@ -71,3 +69,11 @@ def print_portfolio(portfolio):
 from decimal import Decimal
 class DStock(Stock):
     _types = (str, int, Decimal)
+    
+class SimpleStock:
+    def __init__(self, name, shares, price):
+        self.name = name
+        self.shares = shares
+        self.price = price
+    def cost(self):
+        return self.shares * self.price

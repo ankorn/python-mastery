@@ -88,9 +88,3 @@ class redirect_stdout:
         return self.out_file
     def __exit__(self, ty, val, tb):
         sys.stdout = self.stdout
-
-import stock, reader
-portfolio = reader.read_csv_as_instances('Data/portfolio.csv', stock.Stock)
-# formatter = create_formatter('text', upper_headers=True)
-formatter = create_formatter('csv', column_formats=['"%s"','%d','%0.2f'])
-print_table(portfolio, ['name','shares','price'], formatter)
