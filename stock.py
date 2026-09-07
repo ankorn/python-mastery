@@ -76,6 +76,11 @@ class SimpleStock:
     shares = PositiveInteger()
     price  = PositiveFloat()
     
+    def __setattr__(self, name, value):
+        if name not in { 'name', 'shares', 'price' }:
+            raise AttributeError('No attribute %s' % name)
+        super().__setattr__(name, value)
+    
     def __init__(self, name, shares, price):
         self.name = name
         self.shares = shares
@@ -83,4 +88,21 @@ class SimpleStock:
     def cost(self):
         return self.shares * self.price
     
-print(SimpleStock('GOOG', 100, 490.10).cost())
+class Readonly:
+    def __init__(self, obj):
+        self.__dict__['_obj'] = obj
+    def __setattr__(self, name, value):
+        raise AttributeError("Can't set attribute")
+    def __getattr__(self, name):
+        return getattr(self._obj, name)
+    
+class Spam:
+    def a(self):
+        print('Spam.a')
+    def b(self):
+        print('Spam.b')
+
+a = SimpleStock('GOOG', 100, 490.10)
+a.shares = 75
+a.share = 50
+
