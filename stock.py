@@ -70,10 +70,17 @@ from decimal import Decimal
 class DStock(Stock):
     _types = (str, int, Decimal)
     
+from validate import String, PositiveInteger, PositiveFloat
 class SimpleStock:
+    name   = String()
+    shares = PositiveInteger()
+    price  = PositiveFloat()
+    
     def __init__(self, name, shares, price):
         self.name = name
         self.shares = shares
         self.price = price
     def cost(self):
         return self.shares * self.price
+    
+print(SimpleStock('GOOG', 100, 490.10).cost())
