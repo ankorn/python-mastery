@@ -1,7 +1,9 @@
+from typedproperty import typedproperty, String
+
 class Stock:
     _types = (str, int, float)
     __slots__ = '_shares', '_price', 'name'
-    
+
     def __init__(self, name, shares, price):
         self.name = name
         self._shares = shares
@@ -70,21 +72,22 @@ from decimal import Decimal
 class DStock(Stock):
     _types = (str, int, Decimal)
     
-from validate import String, PositiveInteger, PositiveFloat
 class SimpleStock:
-    name   = String()
-    shares = PositiveInteger()
-    price  = PositiveFloat()
-    
-    def __setattr__(self, name, value):
-        if name not in { 'name', 'shares', 'price' }:
-            raise AttributeError('No attribute %s' % name)
-        super().__setattr__(name, value)
-    
+    # name = typedproperty('name', str)
+    name = String()
+    shares = typedproperty('shares', int)
+    price = typedproperty('price', float)
     def __init__(self, name, shares, price):
         self.name = name
         self.shares = shares
         self.price = price
+        
+    # def __setattr__(self, name, value):
+    #     print(name, value)
+    #     if name not in { 'name', 'shares', 'price' }:
+    #         raise AttributeError('No attribute %s' % name)
+    #     super().__setattr__(name, value)
+        
     def cost(self):
         return self.shares * self.price
     
@@ -95,20 +98,7 @@ class Readonly:
         raise AttributeError("Can't set attribute")
     def __getattr__(self, name):
         return getattr(self._obj, name)
+
     
-class Spam:
-    def a(self):
-        print('Spam.a')
-    def b(self):
-        print('Spam.b')
-        
-class MySpam:
-    def __init__(self):
-        self._spam = Spam()
-    def a(self):
-        print('MySpam.a')
-        self._spam.a()
-    def c(self):
-        print('MySpam.c')
-    def __getattr__(self, name):
-        return getattr(self._spam, name)
+s = SimpleStock(1, 1, 2.5)
+print(s.__dict__)

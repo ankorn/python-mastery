@@ -4,3 +4,6 @@
 
 ## class
 - @classmethod handles class state(not instance state like normal method); passes cls on which method was called
+
+## closure
+- you can use @property and @.setter without class in clousure

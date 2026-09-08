@@ -13,18 +13,11 @@ class ClassWithFromRow(ABC):
         ...
         
 def convert_csv(lines, convert: Callable[[list[str], list[str, int, float]]], *, headers=None):
-    records = []
     rows = csv.reader(lines)
     if headers is None:
         headers = next(rows)
         
     return list(map(lambda row: convert(headers, row), rows))
-        
-    for row in rows:
-        record = convert(headers, row)
-        records.append(record)
-    return records
-    
 
 def csv_as_dicts(lines: Lines, types: Types, *, headers=None) -> Records:
     '''
@@ -59,3 +52,26 @@ def read_csv_as_instances(filename, cls, *, headers=None):
     '''
     with open(filename) as file:
         return csv_as_instances(file, cls, headers=headers)
+    
+    
+def counter(value):
+    def incr():
+        nonlocal value
+        value += 1
+        return value
+
+    def decr():
+        nonlocal value
+        value -= 1
+        return value
+
+    return incr, decr
+up, down = counter(0)
+r = up()
+r = up()
+r = up()
+r = up()
+r = up()
+
+
+print(r)
