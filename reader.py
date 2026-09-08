@@ -1,40 +1,49 @@
 
 import csv
 from collections.abc import Iterable, Callable
+from abc import ABC, abstractmethod
 
 type Lines = Iterable[tuple[str, int, float]]
 type Types = list[Callable[[str], str | int | float]]
 type Record = dict[str, str | int | float]
 type Records = list[Record]
-class ClassWithFromRow:
+class ClassWithFromRow(ABC):
+    @abstractmethod
     def from_row(self, row: list[str]) -> Record:
-        pass
+        ...
+        
+def convert_csv(lines, convert: Callable[[list[str], list[str, int, float]]], *, headers=None):
+    records = []
+    rows = csv.reader(lines)
+    if headers is None:
+        headers = next(rows)
+        
+    return list(map(lambda row: convert(headers, row), rows))
+        
+    for row in rows:
+        record = convert(headers, row)
+        records.append(record)
+    return records
+    
 
 def csv_as_dicts(lines: Lines, types: Types, *, headers=None) -> Records:
     '''
     Convert lines of CSV data into a list of dictionaries
     '''
-    records: Records = []
-    rows = csv.reader(lines)
-    if headers is None:
-        headers = next(rows)
-    for row in rows:
-        record = { name: func(val)
-                   for name, func, val in zip(headers, types, row) }
-        records.append(record)
+    def make_typed_dict(headers, row):
+        return { name: func(value) for name, value, func in zip(headers, row, types) }
+    
+    records = convert_csv(lines, make_typed_dict)
     return records
 
 def csv_as_instances(lines: Lines, cls: ClassWithFromRow, *, headers=None) -> Records:
     '''
     Convert lines of CSV data into a list of instances
     '''
-    records = []
-    rows = csv.reader(lines)
-    if headers is None:
-        headers = next(rows)
-    for row in rows:
-        record = cls.from_row(row)
-        records.append(record)
+    def make_instance(_, row):
+        return cls.from_row(row)
+    
+    records = convert_csv(lines, make_instance)
     return records
 
 def read_csv_as_dicts(filename, types, *, headers=None):
@@ -50,10 +59,3 @@ def read_csv_as_instances(filename, cls, *, headers=None):
     '''
     with open(filename) as file:
         return csv_as_instances(file, cls, headers=headers)
-
-port = read_csv_as_dicts('Data/portfolio.csv', [str, int, float])
-print(port)
-
-import stock
-port = read_csv_as_instances('Data/portfolio.csv', stock.Stock)
-print(port)
