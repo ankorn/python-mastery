@@ -1,66 +1,59 @@
+
 import csv
-import tracemalloc
+from collections.abc import Iterable, Callable
 
-def read_csv_as_dicts(path, types):
-    parser = DictCSVParser(types)
-    result = []
-    
-    with open(path) as f:
-        rows = csv.reader(f)
-        headers = next(rows)
-        
-        for row in rows:
-            # row_dict = { name: conv(value) for name, conv, value in zip(headers, types, row) }
-            record = parser.make_record(headers, row)
-            result.append(record)
-    
-    return result
+type Lines = Iterable[tuple[str, int, float]]
+type Types = list[Callable[[str], str | int | float]]
+type Record = dict[str, str | int | float]
+type Records = list[Record]
+class ClassWithFromRow:
+    def from_row(self, row: list[str]) -> Record:
+        pass
 
-def read_csv_as_instances(filename, cls):
+def csv_as_dicts(lines: Lines, types: Types, *, headers=None) -> Records:
     '''
-    Read a CSV file into a list of instances
+    Convert lines of CSV data into a list of dictionaries
     '''
-    parser = InstanceCSVParser(cls)
-    records = []
-    
-    with open(filename) as f:
-        rows = csv.reader(f)
+    records: Records = []
+    rows = csv.reader(lines)
+    if headers is None:
         headers = next(rows)
-        for row in rows:
-            record = parser.make_record(headers, row)
-            records.append(record)
+    for row in rows:
+        record = { name: func(val)
+                   for name, func, val in zip(headers, types, row) }
+        records.append(record)
     return records
 
-import csv
-from abc import ABC, abstractmethod
+def csv_as_instances(lines: Lines, cls: ClassWithFromRow, *, headers=None) -> Records:
+    '''
+    Convert lines of CSV data into a list of instances
+    '''
+    records = []
+    rows = csv.reader(lines)
+    if headers is None:
+        headers = next(rows)
+    for row in rows:
+        record = cls.from_row(row)
+        records.append(record)
+    return records
 
-class CSVParser(ABC):
-    def parse(self, filename):
-        records = []
-        with open(filename) as f:
-            rows = csv.reader(f)
-            headers = next(rows)
-            for row in rows:
-                record = self.make_record(headers, row)
-                records.append(record)
-        return records
+def read_csv_as_dicts(filename, types, *, headers=None):
+    '''
+    Read CSV data into a list of dictionaries with optional type conversion
+    '''
+    with open(filename) as file:
+        return csv_as_dicts(file, types, headers=headers)
 
-    @abstractmethod
-    def make_record(self, headers, row):
-        pass
-    
-class DictCSVParser(CSVParser):
-    def __init__(self, types):
-        self.types = types
+def read_csv_as_instances(filename, cls, *, headers=None):
+    '''
+    Read CSV data into a list of instances
+    '''
+    with open(filename) as file:
+        return csv_as_instances(file, cls, headers=headers)
 
-    def make_record(self, headers, row):
-        return { name: func(val) for name, func, val in zip(headers, self.types, row) }
+port = read_csv_as_dicts('Data/portfolio.csv', [str, int, float])
+print(port)
 
-class InstanceCSVParser(CSVParser):
-    def __init__(self, cls):
-        self.cls = cls
-
-    def make_record(self, headers, row):
-        return self.cls.from_row(row)
-
-    
+import stock
+port = read_csv_as_instances('Data/portfolio.csv', stock.Stock)
+print(port)

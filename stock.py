@@ -112,8 +112,3 @@ class MySpam:
         print('MySpam.c')
     def __getattr__(self, name):
         return getattr(self._spam, name)
-
-a = SimpleStock('GOOG', 100, 490.10)
-a.shares = 75
-a.share = 50
-
