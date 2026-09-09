@@ -1,34 +1,22 @@
-import sys
-import inspect
-
 class Structure:
     _fields = ()
-    
+
     @classmethod
-    def set_fields(cls):
-        syg = inspect.signature(cls.__init__)
-        cls._fields = tuple(syg.parameters)[1:] # skip self
-        
-    @staticmethod
-    def _init():
-        locs = sys._getframe(1).f_locals
-        self = locs['self']
-        for name, val in locs.items():
-            if name == 'self': continue
-            setattr(self, name, val)    
+    def create_init(cls):
+        argstr = ','.join(cls._fields)
+        code = f'def __init__(self, {argstr}):\n'
+        for name in cls._fields:
+            code += f'    self.{name} = {name}\n'
             
+        locs = {}
+        exec(code, locs)
+        cls.__init__ = locs['__init__']
+    
     def __repr__(self):
         return '%s(%s)' % (type(self).__name__, ', '.join(repr(getattr(self, name)) for name in self._fields))
-    
 
     def __setattr__(self, name, value):
         if name not in self._fields and not name.startswith('_'):
             raise AttributeError(f'No attribute {name}')
         
         super().__setattr__(name, value) # object setattr
-        
-class Stock(Structure):
-    def __init__(self, name, shares, price):
-        self._init()
-
-
