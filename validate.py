@@ -1,3 +1,5 @@
+import inspect
+
 class Validator:
     def __init__(self, name=None):
         self.name = name
@@ -52,45 +54,21 @@ class PositiveFloat(Float, Positive):
 class NonEmptyString(String, NonEmpty):
     pass
 
-class Stock:
-    _types = (str, int, float)
-    __slots__ = '_shares', '_price', 'name'
+class ValidatedFunction:
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        print('Calling', self.func)
+        result = self.func(*args, **kwargs)
+        return result
     
-    def __init__(self, name, shares, price):
-        self.name = name
-        self._shares = shares
-        self._price = price
-        
-    def __repr__(self):
-        return f'Stock(\'{self.name}\', {self.shares}, {self.price})'
-    
-    def __eq__(self, other):
-        return isinstance(other, Stock) and ((self.name, self.shares, self.price) == 
-                                             (other.name, other.shares, other.price))
-        
-    @classmethod
-    def from_row(cls, row: list[str]):
-        values = [func(value) for value, func in zip(row, cls._types)]
-        
-        return cls(*values)
-        
-    @property
-    def cost(self):
-        return self._shares * self._price
-    
-    @property
-    def shares(self):
-        return self._shares
-    @shares.setter
-    def shares(self, v):
-        self._shares = PositiveInteger.check(v)
-        
-    @property
-    def price(self):
-        return self._price
-    @price.setter
-    def price(self, v):
-        self._price = PositiveFloat.check(v)
-    
-    def sell(self, nshares):
-        self._shares -= nshares
+def add(x: Integer, y:Integer):
+    return x + y
+
+sig = inspect.signature(add)
+
+sig.bind(add, )
+
+add = ValidatedFunction(add)
+add(2, 3)
