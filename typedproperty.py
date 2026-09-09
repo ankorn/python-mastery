@@ -21,7 +21,9 @@ class String:
     def __get__(self, instance, owner):
         return instance.__dict__.get(self.storage_name)
     def __set__(self, instance, value):
-        instance.__dict__[self.storage_name] = typedproperty(self.storage_name, value)
+        if not isinstance(value, str):
+            raise TypeError(f'Expected {str}')
+        instance.__dict__[self.storage_name] = value
         
         
     

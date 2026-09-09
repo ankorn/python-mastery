@@ -73,8 +73,7 @@ class DStock(Stock):
     _types = (str, int, Decimal)
     
 class SimpleStock:
-    # name = typedproperty('name', str)
-    name = String()
+    name = typedproperty('name', str)
     shares = typedproperty('shares', int)
     price = typedproperty('price', float)
     def __init__(self, name, shares, price):
@@ -99,6 +98,3 @@ class Readonly:
     def __getattr__(self, name):
         return getattr(self._obj, name)
 
-    
-s = SimpleStock(1, 1, 2.5)
-print(s.__dict__)
