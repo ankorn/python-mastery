@@ -1,8 +1,14 @@
 import sys
+import inspect
 
 class Structure:
     _fields = ()
     
+    @classmethod
+    def set_fields(cls):
+        syg = inspect.signature(cls.__init__)
+        cls._fields = tuple(syg.parameters)[1:] # skip self
+        
     @staticmethod
     def _init():
         locs = sys._getframe(1).f_locals
@@ -20,3 +26,9 @@ class Structure:
             raise AttributeError(f'No attribute {name}')
         
         super().__setattr__(name, value) # object setattr
+        
+class Stock(Structure):
+    def __init__(self, name, shares, price):
+        self._init()
+
+
