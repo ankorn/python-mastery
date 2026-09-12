@@ -1,4 +1,4 @@
-from validate import Validator
+from validate import Validator, validated
 
 class Structure:
     _fields = ()
@@ -42,6 +42,9 @@ def validate_attributes(cls):
             
             if val.expected_type:
                 types.append(val.expected_type)
+                
+    # iter over cls methods
+    # cls.f = validated(f)
             
     cls._types = types
             
