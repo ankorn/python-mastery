@@ -1,13 +1,13 @@
 from logcall import logged, logformat
-from validate import validated, Integer
+from validate import validated, Integer, enforce
 
 class Spam:
     @logged
     def instance_method(self):
         pass
 
-    @logged
     @classmethod
+    @logged
     def class_method(cls):
         pass
 
@@ -21,8 +21,8 @@ class Spam:
     def property_method(self):
         pass
     
-s = Spam()
-s.instance_method()
-Spam.class_method()
-Spam.static_method()
-s.property_method
+@enforce(x=Integer, y=Integer, return_=Integer)
+def pow(x, y):
+    return x ** y
+
+print(pow(1, -2))

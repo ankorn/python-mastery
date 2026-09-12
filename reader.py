@@ -3,6 +3,7 @@ import csv
 from collections.abc import Iterable, Callable
 from abc import ABC, abstractmethod
 import logging
+from typing import Optional
 
 type Lines = Iterable[tuple[str, int, float]]
 type Types = list[Callable[[str], str | int | float]]
@@ -15,7 +16,7 @@ class ClassWithFromRow(ABC):
         
 log = logging.getLogger(__name__)
         
-def convert_csv(lines, convert: Callable[[list[str], list[str, int, float]]], types: Types, *, headers=None):
+def convert_csv(lines, convert: Callable[[list[str], list[str, int, float]]], types: Optional[Types] = None, *, headers=None):
     rows = csv.reader(lines)
     if headers is None:
         headers = next(rows)
@@ -24,12 +25,14 @@ def convert_csv(lines, convert: Callable[[list[str], list[str, int, float]]], ty
     for i, row in enumerate(rows):
         error = False
         message = None
-        for t, v in zip(types, row):
-            try:
-                t(v)
-            except ValueError as e:
-                message = e
-                error = True
+        
+        if types:
+            for t, v in zip(types, row):
+                try:
+                    t(v)
+                except ValueError as e:
+                    message = e
+                    error = True
                 
         if error:
             log.warning(f'Row {i + 1}: Bad row: {row}')
@@ -51,14 +54,14 @@ def csv_as_dicts(lines: Lines, types: Types, *, headers=None) -> Records:
     records = convert_csv(lines, make_typed_dict, types)
     return records
 
-def csv_as_instances(lines: Lines, cls: ClassWithFromRow, types: Types, *, headers=None) -> Records:
+def csv_as_instances(lines: Lines, cls: ClassWithFromRow, *, headers=None) -> Records:
     '''
     Convert lines of CSV data into a list of instances
     '''
     def make_instance(_, row):
         return cls.from_row(row)
     
-    records = convert_csv(lines, make_instance, types)
+    records = convert_csv(lines, make_instance)
     return records
 
 def read_csv_as_dicts(filename, types, *, headers=None):

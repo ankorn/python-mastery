@@ -111,3 +111,40 @@ def validated(func):
         return result
 
     return wrapper
+
+from functools import wraps
+
+def enforce(**annotations):
+    def enforced(func):
+        sig = inspect.signature(func)
+        
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            bound = sig.bind(*args, **kwargs)
+            retcheck = annotations['return_']
+            
+            errors = []
+            for name, validator in annotations.items():
+                if name == 'return_': continue
+                
+                try:
+                    validator.check(bound.arguments[name])
+                except Exception as e:
+                    errors.append(f'    {name}: {e}')
+    
+            if errors:
+                raise TypeError('Bad Arguments\n' + '\n'.join(errors))
+    
+            result = func(*args, **kwargs)
+    
+            if retcheck:
+                try:
+                    retcheck.check(result)
+                except Exception as e:
+                    raise TypeError(f'Bad return: {e}') from None
+            return result
+            
+        return wrapper
+            
+        
+    return enforced
