@@ -1,4 +1,5 @@
 from validate import Validator, validated
+from inspect import getmembers, isroutine
 
 class Structure:
     _fields = ()
@@ -34,22 +35,29 @@ class Structure:
         return cls(*rowdata)
 
 def validate_attributes(cls):
+    '''
+    Class decorator that scans a class definition for Validators
+    and builds a _fields variable that captures their definition order.
+    '''
     validators = []
-    types = []
     for name, val in vars(cls).items():
         if isinstance(val, Validator):
             validators.append(val)
-            
-            if val.expected_type:
-                types.append(val.expected_type)
-                
-    # iter over cls methods
-    # cls.f = validated(f)
-            
-    cls._types = types
-            
-    cls._fields = [val.name for val in validators]
-    
-    cls.create_init()
+
+        # Apply validated decorator to any callable with annotations
+        elif callable(val) and val.__annotations__:
+            setattr(cls, name, validated(val))
+
+    # Collect all of the field names
+    cls._fields = tuple([v.name for v in validators])
+
+    # Collect type conversions. The lambda x:x is an identity
+    # function that's used in case no expected_type is found.
+    cls._types = tuple([ getattr(v, 'expected_type', lambda x: x)
+                   for v in validators ])
+
+    # Create the __init__ method
+    if cls._fields:
+        cls.create_init()
     
     return cls

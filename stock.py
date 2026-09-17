@@ -12,5 +12,9 @@ class Stock(Structure):
     def cost(self):
         return self.shares * self.price
 
-    def sell(self, nshares):
+    def sell(self, nshares: PositiveInteger):
         self.shares -= nshares
+        
+        
+        
+print('>>>', callable(Stock.cost))
