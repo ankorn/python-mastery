@@ -8,3 +8,8 @@
 
 ## closure
 - you can use @property and @.setter without class in clousure
+
+## generators
+- generator "priming": need to send None before actual values
+- GeneratorExit if del generator or generator.close()
+- generator.throw does not stop generator

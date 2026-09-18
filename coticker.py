@@ -49,4 +49,10 @@ def ticker(fmt, fields):
         rec = yield
         row = [getattr(rec, name) for name in fields]
         formatter.row(row)
-        
+
+if __name__ == '__main__':
+    follow('Data/stocklog.csv',
+           to_csv(
+           create_ticker(
+           negchange(
+           ticker('text', ['name','price','change'])))))
